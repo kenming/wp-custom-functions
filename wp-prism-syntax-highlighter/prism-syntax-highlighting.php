@@ -6,7 +6,7 @@
  *
  * @package Bricks-Child
  * @author  Claude 3.7 Sonnet
- * @version 1.0.0 (2025-03-24)
+ * @version 1.0.1 (2025-03-25)
  */
 
 // 如果直接訪問此檔案，則退出
@@ -161,6 +161,25 @@ function add_prism_js_highlighting() {
             font-size: 0.8em;
         }
         
+        /* 檔案名稱顯示樣式 */
+        .code-filename {
+            background-color: #2d2d2d;
+            color: #ccc;
+            padding: 0.5em 1em;
+            margin-bottom: -5px;
+            border-top-left-radius: 5px;
+            border-top-right-radius: 5px;
+            border: 1px solid #444;
+            border-bottom: none;
+            font-family: sans-serif;
+            font-size: 0.9em;
+        }
+        
+        .code-filename + pre[class*="language-"] {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+        
         /* 確保程式碼區塊在行動裝置上也能正常顯示 */
         @media (max-width: 767px) {
             pre[class*="language-"] {
@@ -183,57 +202,116 @@ function add_prism_js_highlighting() {
         
         // 新增初始化腳本
         $init_script = '
-        // 自動為所有 pre > code 元素添加 line-numbers 類別
         document.addEventListener("DOMContentLoaded", function() {
             // 為所有程式碼區塊添加行號
             document.querySelectorAll("pre:not(.no-line-numbers)").forEach(function(pre) {
                 pre.classList.add("line-numbers");
             });
             
-            // 設定 Autoloader 的語言路徑
-            if (Prism.plugins.autoloader) {
-                Prism.plugins.autoloader.languages_path = "https://cdn.jsdelivr.net/npm/prismjs@latest/components/";
+            // 初始化 Prism
+            if (typeof Prism !== "undefined") {
+                Prism.highlightAll();
             }
-            
-            // 重新高亮所有程式碼區塊
-            Prism.highlightAll();
         });
         ';
         
-        wp_add_inline_script('prism-autoloader', $init_script);
+        wp_add_inline_script('prism-js', $init_script);
     //}
 }
 add_action('wp_enqueue_scripts', 'add_prism_js_highlighting');
 
 /**
- * 自動將 WordPress 內建的程式碼區塊轉換為 Prism.js 格式
+ * 註冊 Prism.js 短代碼
+ * 
+ * 用法:
+ * [prism lang="php" line_numbers="true" highlight="1,3-5" filename="example.php"]程式碼內容[/prism]
  */
-function convert_to_prism_format($content) {
-    // 尋找 <pre><code> 組合但沒有 language- 類別的區塊
-    $pattern = '/<pre><code>(.*?)<\/code><\/pre>/s';
-    $replacement = '<pre><code class="language-markup">$1</code></pre>';
-    $content = preg_replace($pattern, $replacement, $content);
-    
-    return $content;
-}
-add_filter('the_content', 'convert_to_prism_format');
-
-/**
- * 新增簡短程式碼以便在文章中輕鬆插入程式碼區塊
- * 使用方式: [prism lang="php"]<?php echo "Hello World"; ?>[/prism]
- */
-function prism_code_shortcode($atts, $content = null) {
+function prism_shortcode($atts, $content = null) {
+    // 提取屬性
     $attributes = shortcode_atts(array(
-        'lang' => 'markup', // 預設語言
-        'line_numbers' => 'true', // 是否顯示行號
+        'lang' => 'markup',
+        'line_numbers' => 'true',
+        'highlight' => '',
+        'filename' => '',
+        'start' => '1',  // 起始行號
     ), $atts);
     
-    $language = esc_attr($attributes['lang']);
-    $line_numbers_class = ($attributes['line_numbers'] === 'true') ? ' line-numbers' : '';
+    // 移除 WordPress 自動添加的 HTML 標籤
+    $content = preg_replace('/<br\s*\/?>/i', '', $content);
+    $content = preg_replace('/<\/?p>/i', '', $content);
     
-    // 處理程式碼內容，確保 HTML 實體被正確編碼
-    $content = htmlspecialchars(trim($content), ENT_QUOTES);
+    // 處理程式碼，移除首尾的空白
+    $content = trim($content);
     
-    return '<pre class="' . $line_numbers_class . '"><code class="language-' . $language . '">' . $content . '</code></pre>';
+    // 建立 CSS 類別
+    $classes = 'language-' . esc_attr($attributes['lang']);
+    
+    // 建立 data 屬性
+    $data_attr = '';
+    if ($attributes['line_numbers'] === 'true') {
+        $classes .= ' line-numbers';
+        if ($attributes['start'] !== '1') {
+            $data_attr .= ' data-start="' . esc_attr($attributes['start']) . '"';
+        }
+    }
+    
+    if (!empty($attributes['highlight'])) {
+        $data_attr .= ' data-line="' . esc_attr($attributes['highlight']) . '"';
+    }
+    
+    // 檔案名稱顯示
+    $filename_html = '';
+    if (!empty($attributes['filename'])) {
+        $filename_html = '<div class="code-filename">' . esc_html($attributes['filename']) . '</div>';
+    }
+    
+    // 確保 Prism.js 被載入
+    add_prism_js_highlighting();
+    
+    // 輸出 HTML
+    return $filename_html . '<pre class="' . $classes . '"' . $data_attr . '><code class="' . $classes . '">' . 
+           esc_html($content) . '</code></pre>';
 }
-add_shortcode('prism', 'prism_code_shortcode');
+add_shortcode('prism', 'prism_shortcode');
+
+/**
+ * 防止 WordPress 自動添加 p 標籤到短代碼內容
+ */
+function prism_shortcode_fix($content) {
+    $array = array(
+        '<p>[prism' => '[prism',
+        'prism]</p>' => 'prism]',
+        '<p></pre>' => '</pre>',
+        '<pre><br />' => '<pre>',
+    );
+    return strtr($content, $array);
+}
+add_filter('the_content', 'prism_shortcode_fix');
+
+/**
+ * 在 Gutenberg 編輯器中添加 Prism.js 支援
+ */
+function add_prism_to_gutenberg() {
+    // 只在編輯器中載入
+    if (!is_admin()) {
+        return;
+    }
+    
+    // 註冊和載入編輯器樣式
+    wp_enqueue_style(
+        'prism-editor-css',
+        get_stylesheet_directory_uri() . '/assets/css/prism-editor.css',
+        array(),
+        '1.0.0'
+    );
+    
+    // 添加編輯器腳本
+    wp_enqueue_script(
+        'prism-editor-js',
+        get_stylesheet_directory_uri() . '/assets/js/prism-editor.js',
+        array('wp-blocks', 'wp-element', 'wp-editor'),
+        '1.0.0',
+        true
+    );
+}
+add_action('enqueue_block_editor_assets', 'add_prism_to_gutenberg');
