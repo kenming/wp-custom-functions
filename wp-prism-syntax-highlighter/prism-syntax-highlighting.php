@@ -6,7 +6,7 @@
  *
  * @package Bricks-Child
  * @author  Claude 3.7 Sonnet
- * @version 1.0.1 (2025-03-25)
+ * @version 1.0.2 (2025-03-25)
  */
 
 // 如果直接訪問此檔案，則退出
@@ -110,95 +110,14 @@ function add_prism_js_highlighting() {
             }
         }
         ');
-        
-        // 新增自訂 CSS 以優化顯示效果
-        $custom_css = '
-        /* 確保程式碼區塊能夠水平捲動而不換行 */
-        pre[class*="language-"] {
-            overflow: auto;
-            max-height: 800px; /* 設定最大高度，超過則捲動 */
-            margin: 1.5em 0;
-            border-radius: 5px;
-        }
-        
-        /* 優化行號顯示 */
-        .line-numbers .line-numbers-rows {
-            border-right: 1px solid #ddd;
-            padding-right: 10px;
-        }
-        
-        /* 自訂複製按鈕樣式 */
-        div.code-toolbar > .toolbar {
-            opacity: 0.3;
-            transition: opacity 0.3s ease-in-out;
-            right: 1.2em !important;
-        }
-        
-        div.code-toolbar:hover > .toolbar {
-            opacity: 1;
-        }
-        
-        div.code-toolbar > .toolbar > .toolbar-item > button {
-            color: #fff;
-            background: #3a3a3a;
-            border-radius: 3px;
-            padding: 5px 10px;
-            font-size: 0.8em;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        div.code-toolbar > .toolbar > .toolbar-item > button:hover {
-            background: #555;
-        }
-        
-        /* 複製成功提示樣式 */
-        div.code-toolbar > .toolbar > .toolbar-item > span.copy-success {
-            color: #fff;
-            background: #4caf50;
-            border-radius: 3px;
-            padding: 5px 10px;
-            font-size: 0.8em;
-        }
-        
-        /* 檔案名稱顯示樣式 */
-        .code-filename {
-            background-color: #2d2d2d;
-            color: #ccc;
-            padding: 0.5em 1em;
-            margin-bottom: -5px;
-            border-top-left-radius: 5px;
-            border-top-right-radius: 5px;
-            border: 1px solid #444;
-            border-bottom: none;
-            font-family: sans-serif;
-            font-size: 0.9em;
-        }
-        
-        .code-filename + pre[class*="language-"] {
-            border-top-left-radius: 0;
-            border-top-right-radius: 0;
-        }
-        
-        /* 確保程式碼區塊在行動裝置上也能正常顯示 */
-        @media (max-width: 767px) {
-            pre[class*="language-"] {
-                font-size: 14px;
-                padding: 1em;
-            }
-            
-            div.code-toolbar > .toolbar {
-                opacity: 1;
-            }
-            
-            div.code-toolbar > .toolbar > .toolbar-item > button {
-                padding: 3px 8px;
-                font-size: 0.7em;
-            }
-        }
-        ';
-        
-        wp_add_inline_style('prism-css', $custom_css);
+                
+        // 註冊和載入自訂 CSS
+        wp_enqueue_style(
+            'prism-custom-css',
+            get_stylesheet_directory_uri() . '/assets/css/prism-custom.css',
+            array('prism-css', 'prism-line-numbers', 'prism-toolbar'),
+            $version
+        );
         
         // 新增初始化腳本
         $init_script = '
@@ -290,7 +209,9 @@ add_filter('the_content', 'prism_shortcode_fix');
 
 /**
  * 在 Gutenberg 編輯器中添加 Prism.js 支援
+ * 目前並未實作
  */
+/*
 function add_prism_to_gutenberg() {
     // 只在編輯器中載入
     if (!is_admin()) {
@@ -315,3 +236,4 @@ function add_prism_to_gutenberg() {
     );
 }
 add_action('enqueue_block_editor_assets', 'add_prism_to_gutenberg');
+*/

@@ -15,7 +15,8 @@
 ## 安裝方法
 
 1. 將 `prism-syntax-highlighting.php` 檔案上傳到您的 WordPress 主題的 `/inc` 目錄
-2. 在主題的 `functions.php` 中添加以下程式碼：
+2. 將 `/css/prism-custom.css` 檔案上傳到佈景主題的 '/assets/css' 目錄
+3. 在主題的 `functions.php` 中添加以下程式碼：
    ```php
 	/**
 	 * 載入 Prism.js 語法高亮功能
@@ -114,6 +115,10 @@ your-theme/
 此功能已內建美觀的樣式，但您也可以在主題的 `style.css` 中覆蓋這些樣式以符合您的網站設計。
 
 ## 版本歷史
+
+### 1.0.2 (2025-03-25)
+- 🐛 修正行高不一致問題
+- 🔧 將 CSS (prism-custom.css) 獨立出來
 
 ### 1.0.1 (2025-03-25)
 - 🐛 修復了短代碼中自動添加的 HTML 標籤問題

@@ -1,0 +1,138 @@
+/* 確保行號和程式碼使用相同的行高 */
+pre.line-numbers,
+pre.line-numbers>code,
+.line-numbers .line-numbers-rows {
+    line-height: 1.5 !important;
+    /* 使用一致的行高 */
+}
+
+/* 確保行號和程式碼使用相同的字體系列和大小 */
+pre.line-numbers,
+pre.line-numbers>code,
+.line-numbers .line-numbers-rows {
+    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace !important;
+    font-size: calc(var(--text-m) * 0.9) !important;
+}
+
+.line-numbers-rows>span {
+    line-height: inherit !important;
+}
+
+/* 確保程式碼區塊能夠水平捲動而不換行 */
+pre[class*="language-"] {
+    overflow: auto;
+    max-height: 800px;
+    /* 設定最大高度，超過則捲動 */
+    margin: 1.5em 0;
+    border-radius: 5px;
+}
+
+/* 優化行號顯示 */
+.line-numbers .line-numbers-rows {
+    border-right: 1px solid #ddd;
+    padding-right: 10px;
+}
+
+/* 修正行號與程式碼行高不一致問題 */
+pre[class*="language-"].line-numbers {
+    position: relative;
+    padding-left: 3.8em;
+    counter-reset: linenumber;
+}
+
+pre[class*="language-"].line-numbers>code {
+    position: relative;
+    white-space: inherit;
+}
+
+.line-numbers .line-numbers-rows {
+    position: absolute;
+    pointer-events: none;
+    top: 0;
+    font-size: 100%;
+    left: -3.8em;
+    width: 3em;
+    /* 調整寬度 */
+    letter-spacing: -1px;
+    border-right: 1px solid #999;
+    user-select: none;
+}
+
+.line-numbers-rows>span {
+    display: block;
+    counter-increment: linenumber;
+    line-height: inherit !important;
+    /* 確保行高與程式碼一致 */
+}
+
+.line-numbers-rows>span:before {
+    content: counter(linenumber);
+    color: #999;
+    display: block;
+    padding-right: 0.8em;
+    text-align: right;
+}
+
+/* 自訂複製按鈕樣式 */
+div.code-toolbar>.toolbar {
+    opacity: 0.3;
+    transition: opacity 0.3s ease-in-out;
+    right: 1.2em !important;
+}
+
+div.code-toolbar:hover>.toolbar {
+    opacity: 1;
+}
+
+div.code-toolbar>.toolbar>.toolbar-item>button {
+    color: #fff;
+    background: #3a3a3a;
+    border-radius: 3px;
+    padding: 5px 10px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+div.code-toolbar>.toolbar>.toolbar-item>button:hover {
+    background: #555;
+}
+
+/* 複製成功提示樣式 */
+div.code-toolbar>.toolbar>.toolbar-item>span.copy-success {
+    color: #fff;
+    background: #4caf50;
+    border-radius: 3px;
+    padding: 5px 10px;
+    font-size: 0.8em;
+}
+
+/* 檔案名稱顯示樣式 */
+.code-filename {
+    background-color: #2d2d2d;
+    color: #ccc;
+    padding: 0.5em 1em;
+    margin-bottom: -5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border: 1px solid #444;
+    border-bottom: none;
+    font-family: sans-serif;
+    font-size: 0.9em;
+}
+
+.code-filename+pre[class*="language-"] {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+/* 確保程式碼區塊在行動裝置上也能正常顯示 */
+@media (max-width: 768px) {
+    pre[class*="language-"] {
+        font-size: 14px;
+    }
+
+    .line-numbers .line-numbers-rows {
+        font-size: 14px;
+    }
+}
